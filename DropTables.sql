@@ -21,8 +21,8 @@ DROP TABLE IF EXISTS pizza_discount;
 DROP TABLE IF EXISTS pizza_topping;
 
 -- Other tables with FKs:
-DROP TABLE IF EXISTS ordertable;
 DROP TABLE IF EXISTS pizza;
+DROP TABLE IF EXISTS ordertable;
 
 -- Tables without FKs;
 DROP TABLE IF EXISTS customer;

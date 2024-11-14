@@ -137,5 +137,277 @@ INSERT INTO baseprice (
         ('XLarge', 'Gluten-Free', 12.50, 6.00);
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
--- * * * * * * * * * * * * * * * INSERT ORDERS * * * * * * * * * * * * * * *
--- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+-- * * * * * * * * * * * * * * * * * * * INSERT ORDERS * * * * * * * * * * * * * * * * * * *
+-- Order 1: "On March 5th at 12:03 pm there was a dine-in order (at table 21) for a large
+--          thin crust pizza with Regular Cheese (extra), Pepperoni, and Sausage
+--          (Price: $19.75, Cost: $3.68). They used the “Lunch Special Large” discount for 
+--          the pizza."
+
+-- Insert into ordertable
+INSERT INTO ordertable (
+        ordertable_OrderType,
+        ordertable_OrderDateTime,
+        ordertable_CustPrice,
+        ordertable_BusPrice,
+        ordertable_isComplete)
+    VALUES (
+        'dinein',
+        '2024-03-05 12:03:00',
+        19.75, 3.68,
+        1);
+
+SET @order_id = LAST_INSERT_ID();
+
+-- Insert dine-in details
+INSERT INTO dinein (
+        ordertable_OrderID,
+        dinein_TableNum)
+    VALUES (
+        @order_id,
+        21);
+
+-- Insert pizza into pizza table
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'Large',
+        'Thin',
+        'processing',
+        '2023-03-05 12:03:00',
+        19.75,
+        3.68,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Regular Cheese'),
+        1);
+    
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Pepperoni'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Sausage'),
+        0);
+
+-- Apply discount to pizza
+INSERT INTO pizza_discount (
+        pizza_PizzaID,
+        discount_DiscountID)
+    VALUES (
+        @pizza_id,
+        (SELECT discount_DiscountID
+            FROM discount
+            WHERE discount_DiscountName = 'Lunch Special Large'));
+
+
+-- Order 2: "On April 3rd at 12:05 pm there was a dine-in order (at table 4). They ordered
+--          a medium pan pizza with Feta Cheese, Black Olives, Roma Tomatoes, Mushrooms
+--          and Banana Peppers (Price: $12.85, Cost: $3.23). They used the
+--          'Lunch Special Medium' and the 'Specialty Pizza' discounts for the pizza.
+--          They also ordered a small original crust pizza with Regular Cheese, Chicken
+--          and Banana Peppers (Price: $6.93, Cost: $1.40)."
+
+-- Insert into ordertable
+INSERT INTO ordertable (
+        ordertable_OrderType,
+        ordertable_OrderDateTime,
+        ordertable_CustPrice,
+        ordertable_BusPrice,
+        ordertable_isComplete)
+    VALUES (
+        'dinein',
+        '2024-04-03 12:05:00',
+        12.85 + 6.93,  -- Total customer price for both pizzas
+        3.23 + 1.40,   -- Total business cost for both pizzas
+        1);
+
+SET @order_id = LAST_INSERT_ID();
+
+-- Insert dine-in details
+INSERT INTO dinein (
+        ordertable_OrderID,
+        dinein_TableNum)
+    VALUES (
+        @order_id,
+        4);
+
+-- Insert first pizza (medium pan) into pizza table
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'Medium',
+        'Pan',
+        'processing',
+        '2024-04-03 12:05:00',
+        12.85,
+        3.23,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings for first pizza
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Feta Cheese'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Black Olives'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Roma Tomatoes'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Mushrooms'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Banana Peppers'),
+        0);
+
+-- Apply discounts to first pizza
+INSERT INTO pizza_discount (
+        pizza_PizzaID,
+        discount_DiscountID)
+    VALUES (
+        @pizza_id,
+        (SELECT discount_DiscountID
+            FROM discount
+            WHERE discount_DiscountName = 'Lunch Special Medium'));
+
+INSERT INTO pizza_discount (
+        pizza_PizzaID,
+        discount_DiscountID)
+    VALUES (
+        @pizza_id,
+        (SELECT discount_DiscountID
+            FROM discount
+            WHERE discount_DiscountName = 'Specialty Pizza'));
+
+-- Insert second pizza (small original crust) into pizza table
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'Small',
+        'Original',
+        'processing',
+        '2024-04-03 12:05:00',
+        6.93,
+        1.40,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings for second pizza
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Regular Cheese'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Chicken'),
+        0);
+
+INSERT INTO pizza_topping (
+        pizza_PizzaID,
+        topping_TopID,
+        pizza_topping_IsDouble)
+    VALUES (
+        @pizza_id,
+        (SELECT topping_topID
+            FROM topping
+            WHERE topping_TopName = 'Banana Peppers'),
+        0);
+-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
