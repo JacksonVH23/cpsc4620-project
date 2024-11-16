@@ -4,10 +4,6 @@
 
 -- CreateViews.sql - Define views for PizzaDB
 
-DROP VIEW IF EXISTS ToppingPopularity;
-DROP VIEW IF EXISTS ProfitByPizza;
-DROP VIEW IF EXISTS ProfitByOrderType;
-
 USE PizzaDB;
 
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -38,7 +34,7 @@ SELECT
     p.pizza_Size AS `Size`,
     p.pizza_CrustType AS `Crust`,
     SUM(p.pizza_CustPrice - p.pizza_BusPrice) AS `Profit`,
-    DATE_FORMAT(p.pizza_PizzaDate, '0%m/%Y') AS `OrderMonth`
+    DATE_FORMAT(p.pizza_PizzaDate, '%c/%Y') AS `OrderMonth`
 FROM 
     pizza p
 GROUP BY 
@@ -53,7 +49,7 @@ CREATE OR REPLACE VIEW ProfitByOrderType AS
 (
     SELECT 
         o.ordertable_OrderType AS `customerType`,
-        DATE_FORMAT(o.ordertable_OrderDateTime, '%m/%Y') AS `OrderMonth`,
+        DATE_FORMAT(o.ordertable_OrderDateTime, '%c/%Y') AS `OrderMonth`,
         SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
         SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
         SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `Profit`
@@ -75,9 +71,10 @@ CREATE OR REPLACE VIEW ProfitByOrderType AS
 )
 ORDER BY 
     CASE 
-        WHEN `OrderMonth` = 'Grand Total' THEN 1 
-        ELSE 0 
+        WHEN `customerType` = 'dinein' THEN 1
+        WHEN `customerType` = 'pickup' THEN 2
+        WHEN `customerType` = 'delivery' THEN 3
+        ELSE 4
     END,
-    `customerType`, 
     `OrderMonth`;
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

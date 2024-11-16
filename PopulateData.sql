@@ -227,7 +227,7 @@ SET @customer_id = (
     FROM customer
     WHERE customer_FName = 'Andrew'
       AND customer_LName = 'Wilkes-Krier'
-      AND customer_PhoneNum = '864-254-5861'
+      AND customer_PhoneNum = '8642545861'
 );
 
 -- If the customer doesn't exist, insert them and get the ID
@@ -291,7 +291,7 @@ SET @customer_id = (
     FROM customer
     WHERE customer_FName = 'Andrew'
       AND customer_LName = 'Wilkes-Krier'
-      AND customer_PhoneNum = '864-254-5861'
+      AND customer_PhoneNum = '8642545861'
 );
 
 -- If the customer doesn't exist, insert them and get the ID
@@ -440,7 +440,7 @@ SET @customer_id = (
     FROM customer
     WHERE customer_FName = 'Matt'
       AND customer_LName = 'Engers'
-      AND customer_PhoneNum = '864-474-9953'
+      AND customer_PhoneNum = '8644749953'
 );
 
 -- If the customer doesn't exist, insert them and get the ID
@@ -526,7 +526,7 @@ SET @customer_id = (
     FROM customer
     WHERE customer_FName = 'Frank'
       AND customer_LName = 'Turner'
-      AND customer_PhoneNum = '864-232-8944'
+      AND customer_PhoneNum = '8642328944'
 );
 
 -- If the customer doesn't exist, insert them and get the ID
@@ -617,7 +617,7 @@ SET @customer_id = (
     FROM customer
     WHERE customer_FName = 'Milo'
       AND customer_LName = 'Auckerman'
-      AND customer_PhoneNum = '864-878-5679'
+      AND customer_PhoneNum = '8648785679'
 );
 
 -- If the customer doesn't exist, insert them and get the ID
