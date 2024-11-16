@@ -4,6 +4,10 @@
 
 -- CreateViews.sql - Define views for PizzaDB
 
+DROP VIEW IF EXISTS ToppingPopularity;
+DROP VIEW IF EXISTS ProfitByPizza;
+DROP VIEW IF EXISTS ProfitByOrderType;
+
 USE PizzaDB;
 
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -34,7 +38,7 @@ SELECT
     p.pizza_Size AS `Size`,
     p.pizza_CrustType AS `Crust`,
     SUM(p.pizza_CustPrice - p.pizza_BusPrice) AS `Profit`,
-    DATE_FORMAT(p.pizza_PizzaDate, '%m/%Y') AS `OrderMonth`
+    DATE_FORMAT(p.pizza_PizzaDate, '0%m/%Y') AS `OrderMonth`
 FROM 
     pizza p
 GROUP BY 
@@ -48,32 +52,32 @@ ORDER BY
 CREATE OR REPLACE VIEW ProfitByOrderType AS
 (
     SELECT 
-        o.ordertable_OrderType AS `OrderType`,
+        o.ordertable_OrderType AS `customerType`,
         DATE_FORMAT(o.ordertable_OrderDateTime, '%m/%Y') AS `OrderMonth`,
         SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
         SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
-        SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `TotalProfit`
+        SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `Profit`
     FROM 
         ordertable o
     GROUP BY 
-        `OrderType`, `OrderMonth`
+        `customerType`, `OrderMonth`
 
     UNION ALL
     
     SELECT 
-        'Grand Total' AS `OrderType`,
-        NULL AS `OrderMonth`,
+        NULL AS `customerType`,
+        "Grand Total" AS `OrderMonth`,
         SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
         SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
-        SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `TotalProfit`
+        SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `Profit`
     FROM 
         ordertable o
 )
 ORDER BY 
     CASE 
-        WHEN OrderType = 'Grand Total' THEN 1 
+        WHEN `OrderMonth` = 'Grand Total' THEN 1 
         ELSE 0 
     END,
-    `OrderType`, 
+    `customerType`, 
     `OrderMonth`;
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

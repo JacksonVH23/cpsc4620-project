@@ -9,10 +9,10 @@ USE PizzaDB;
 
 -- * * * * * * * * * * * * * Tables with no FKs * * * * * * * * * * * * * 
 CREATE TABLE baseprice (
-    baseprice_Size VARCHAR(30),
-    baseprice_CrustType VARCHAR(30),
-    baseprice_CustPrice DECIMAL(5, 2),
-    baseprice_BusPrice DECIMAL (5, 2),
+    baseprice_Size VARCHAR(30) NOT NULL,
+    baseprice_CrustType VARCHAR(30) NOT NULL,
+    baseprice_CustPrice DECIMAL(5, 2) NOT NULL,
+    baseprice_BusPrice DECIMAL (5, 2) NOT NULL,
     -- Primary Key(s):
     PRIMARY KEY (baseprice_Size, baseprice_CrustType),
     -- Add index on `baseprice_CrustType` for FK referencing
@@ -21,33 +21,33 @@ CREATE TABLE baseprice (
 
 CREATE TABLE topping (
     topping_topID INT AUTO_INCREMENT,
-    topping_TopName VARCHAR(30),
-    topping_SmallAMT DECIMAL(5, 2),
-    topping_MedAMT DECIMAL(5, 2),
-    topping_LgAMT DECIMAL(5, 2),
-    topping_XLAMT DECIMAL(5, 2),
-    topping_CustPrice DECIMAL(5, 2),
-    topping_BusPrice DECIMAL(5, 2),
-    topping_MinINVT INT,
-    topping_CurINVT INT,
+    topping_TopName VARCHAR(30) NOT NULL,
+    topping_SmallAMT DECIMAL(5, 2) NOT NULL,
+    topping_MedAMT DECIMAL(5, 2) NOT NULL,
+    topping_LgAMT DECIMAL(5, 2) NOT NULL,
+    topping_XLAMT DECIMAL(5, 2) NOT NULL,
+    topping_CustPrice DECIMAL(5, 2) NOT NULL,
+    topping_BusPrice DECIMAL(5, 2) NOT NULL,
+    topping_MinINVT INT NOT NULL,
+    topping_CurINVT INT NOT NULL,
     -- Primary Key(s):
     PRIMARY KEY (topping_TopID)
 );
 
 CREATE TABLE discount (
-    discount_DiscountID INT AUTO_INCREMENT,
-    discount_DiscountName VARCHAR(30),
-    discount_Amount DECIMAL(5, 2),
-    discount_IsPercent TINYINT,
+    discount_DiscountID INT AUTO_INCREMENT NOT NULL,
+    discount_DiscountName VARCHAR(30) NOT NULL,
+    discount_Amount DECIMAL(5, 2) NOT NULL,
+    discount_IsPercent TINYINT NOT NULL,
     -- Primary Key(s):
     PRIMARY KEY (discount_DiscountID)
 );
 
 CREATE TABLE customer (
-    customer_CustID INT AUTO_INCREMENT,
-    customer_FName VARCHAR(30),
-    customer_LName VARCHAR(30),
-    customer_PhoneNum VARCHAR(30),
+    customer_CustID INT AUTO_INCREMENT NOT NULL,
+    customer_FName VARCHAR(30) NOT NULL,
+    customer_LName VARCHAR(30) NOT NULL,
+    customer_PhoneNum VARCHAR(30) NOT NULL,
     -- Primary Key(s):
     PRIMARY KEY (customer_CustID)
 );
@@ -57,13 +57,13 @@ CREATE TABLE customer (
 -- NOTE: pizza references ordertable, so
 --       ordertable must be created first
 CREATE TABLE ordertable (
-    ordertable_OrderID INT AUTO_INCREMENT,
+    ordertable_OrderID INT AUTO_INCREMENT NOT NULL,
     customer_CustID INT,
-    ordertable_OrderType VARCHAR(30),
-    ordertable_OrderDateTime DATETIME,
-    ordertable_CustPrice DECIMAL(5, 2),
-    ordertable_BusPrice DECIMAL(5, 2),
-    ordertable_isComplete TINYINT(1),
+    ordertable_OrderType VARCHAR(30) NOT NULL,
+    ordertable_OrderDateTime DATETIME NOT NULL,
+    ordertable_CustPrice DECIMAL(5, 2) NOT NULL,
+    ordertable_BusPrice DECIMAL(5, 2) NOT NULL,
+    ordertable_isComplete TINYINT(1) DEFAULT 0,
     -- Primary Key(s):
     PRIMARY KEY (ordertable_OrderID),
     -- Foreign Key(s):
@@ -99,9 +99,9 @@ CREATE TABLE pizza (
 -- * * * * * * * * * * * * * * Bridge tables * * * * * * * * * * * * * * *
 -- Bridge table for the `pizza` and `topping` tables
 CREATE TABLE pizza_topping (
-    pizza_PizzaID INT,
-    topping_TopID INT,
-    pizza_topping_IsDouble INT,
+    pizza_PizzaID INT NOT NULL,
+    topping_TopID INT NOT NULL,
+    pizza_topping_IsDouble INT NOT NULL,
     -- Primary Key(s):
     PRIMARY KEY(pizza_PizzaID, topping_TopID),
     -- Foreign Key(s):
@@ -148,8 +148,8 @@ CREATE TABLE order_discount (
 -- Used to represent the three subtypes ['pickup', 'delivery', 'dinein']
 -- for the supertype 'order'
 CREATE TABLE pickup (
-    ordertable_OrderID INT,
-    pickup_IsPickedUp TINYINT,
+    ordertable_OrderID INT NOT NULL,
+    pickup_IsPickedUp TINYINT NOT NULL DEFAULT 0,
     -- Primary Key(s):
     PRIMARY KEY (ordertable_OrderID),
     -- Foreign Key(s):
@@ -159,13 +159,13 @@ CREATE TABLE pickup (
 );
 
 CREATE TABLE delivery (
-    ordertable_OrderID INT,
-    delivery_HouseNum INT,
-    delivery_Street VARCHAR(30),
-    delivery_City VARCHAR(30),
-    delivery_State VARCHAR(2),
-    delivery_Zip INT,
-    delivery_isDelivered TINYINT,
+    ordertable_OrderID INT NOT NULL,
+    delivery_HouseNum INT NOT NULL,
+    delivery_Street VARCHAR(30) NOT NULL,
+    delivery_City VARCHAR(30) NOT NULL,
+    delivery_State VARCHAR(2) NOT NULL,
+    delivery_Zip INT NOT NULL,
+    delivery_isDelivered TINYINT NOT NULL DEFAULT 0,
     -- Primary Key(s):
     PRIMARY KEY (ordertable_OrderID),
     -- Foreign Key(s):
@@ -175,8 +175,8 @@ CREATE TABLE delivery (
 );
 
 CREATE TABLE dinein (
-    ordertable_OrderID INT,
-    dinein_TableNum INT,
+    ordertable_OrderID INT NOT NULL,
+    dinein_TableNum INT NOT NULL,
     -- Primary Key(s):
     PRIMARY KEY (ordertable_OrderID),
     -- Foreign Key(s):

@@ -25,16 +25,16 @@ INSERT INTO topping (
         ('Chicken', 1.50, 2.00, 2.25, 3.00, 1.75, 0.25, 25, 56),
         ('Green Pepper', 1.00, 1.50, 2.00, 2.50, 0.50, 0.02, 25, 79),
         ('Onion', 1.00, 1.50, 2.00, 2.75, 0.50, 0.02, 25, 85),
-        ('Roma Tomato', 1.00, 1.50, 3.50, 4.50, 0.75, 0.03, 10, 86),
-        ('Mushrooms', 1.50, 2.00, 2.50, 3.25, 0.75, 0.10, 50, 52),
+        ('Roma Tomato', 2.00, 3.00, 3.50, 4.50, 0.75, 0.03, 10, 86),
+        ('Mushrooms', 1.50, 2.00, 2.50, 3.00, 0.75, 0.10, 50, 52),
         ('Black Olives', 0.75, 1.00, 1.50, 2.00, 0.60, 0.10, 25, 39),
         ('Pineapple', 1.00, 1.25, 1.75, 2.00, 1.00, 0.25, 0, 15),
         ('Jalapenos', 0.50, 0.75, 1.25, 1.75, 0.50, 0.05, 0, 64),
         ('Banana Peppers', 0.60, 1.00, 1.30, 1.75, 0.50, 0.05, 0, 36),
-        ('Regular Cheese', 2.00, 3.50, 5.00, 6.00, 0.50, 0.12, 50, 250),
+        ('Regular Cheese', 2.00, 3.50, 5.00, 7.00, 0.50, 0.12, 50, 250),
         ('Four Cheese Blend', 2.00, 3.50, 5.00, 7.00, 1.00, 0.15, 25, 150),
-        ('Feta Cheese', 1.75, 3.00, 4.50, 5.50, 1.50, 0.18, 0, 75),
-        ('Goat Cheese', 1.60, 2.75, 4.00, 5.00, 1.50, 0.20, 0, 54),
+        ('Feta Cheese', 1.75, 3.00, 4.00, 5.50, 1.50, 0.18, 0, 75),
+        ('Goat Cheese', 1.60, 2.75, 4.00, 5.50, 1.50, 0.20, 0, 54),
         ('Bacon', 1.00, 1.50, 2.00, 3.00, 1.50, 0.25, 0, 89);
 
 -- Populate discount
@@ -235,7 +235,7 @@ INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
     SELECT
         'Andrew',
         'Wilkes-Krier',
-        '864-254-5861'
+        '8642545861'
     WHERE @customer_id IS NULL;
 
 -- Update the variable to the new ID if a row was inserted
@@ -299,7 +299,7 @@ INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
     SELECT
         'Andrew',
         'Wilkes-Krier',
-        '864-254-5861'
+        '8642545861'
     WHERE @customer_id IS NULL;
 
 -- Update the variable to the new ID if a row was inserted
@@ -317,7 +317,7 @@ INSERT INTO ordertable (
         @customer_id,
         'delivery',
         '2024-04-20 19:11:00',
-        27.94 + 31.50 + 26.75, -- Total customer price for all pizzas
+        68.95, -- Total customer price for all pizzas
         9.19 + 6.25 + 8.18,    -- Total business cost for all pizzas
         1);
 
@@ -448,7 +448,7 @@ INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
     SELECT
         'Matt',
         'Engers',
-        '864-474-9953'
+        '8644749953'
     WHERE @customer_id IS NULL;
 
 -- Update the variable to the new ID if a row was inserted
@@ -492,7 +492,7 @@ INSERT INTO pizza (
     VALUES (
         'XLarge',
         'Gluten-Free',
-        'picked up',
+        'completed',
         '2024-03-02 17:30:00',
         27.45,
         7.88,
@@ -534,7 +534,7 @@ INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
     SELECT
         'Frank',
         'Turner',
-        '864-232-8944'
+        '8642328944'
     WHERE @customer_id IS NULL;
 
 -- Update the variable to the new ID if a row was inserted
@@ -625,7 +625,7 @@ INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
     SELECT
         'Milo',
         'Auckerman',
-        '864-878-5679'
+        '8648785679'
     WHERE @customer_id IS NULL;
 
 -- Update the variable to the new ID if a row was inserted
@@ -643,8 +643,8 @@ INSERT INTO ordertable (
         @customer_id,
         'delivery',
         '2024-04-13 20:32:00',
-        18.00 + 19.25, -- Total customer price for both pizzas
-        2.75 + 3.25,   -- Total business cost for both pizzas
+        31.66,
+        2.75 + 3.25,
         1);
 
 SET @order_id = LAST_INSERT_ID();
@@ -661,7 +661,7 @@ INSERT INTO delivery (
     VALUES (
         @order_id,
         8879,
-        'Suburban Home',
+        'Suburban',
         'Anderson',
         'SC',
         29621,
