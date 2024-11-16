@@ -30,3 +30,9 @@ DROP TABLE IF EXISTS discount;
 DROP TABLE IF EXISTS topping;
 DROP TABLE IF EXISTS baseprice;
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+-- * * * * * * * * * * * * * * * DROP VIEWS * * * * * * * * * * * * * * *
+DROP VIEW IF EXISTS ToppingPopularity;
+DROP VIEW IF EXISTS ProfitByPizza;
+DROP VIEW IF EXISTS ProfitByOrderType;
+-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 

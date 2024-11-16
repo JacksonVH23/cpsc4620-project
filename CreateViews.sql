@@ -6,51 +6,78 @@
 
 USE PizzaDB;
 
+DROP VIEW IF EXISTS ToppingPopularity;
+DROP VIEW IF EXISTS ProfitByPizza;
+DROP VIEW IF EXISTS ProfitByOrderType;
+
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 -- VIEW 1: ToppingPopularity
 -- Description: Ranks all toppings (including double toppings) by popularity.
-CREATE OR REPLACE VIEW ToppingPopularity AS
+CREATE VIEW ToppingPopularity AS
 SELECT 
-    t.topping_TopName AS ToppingName,
-    SUM(CASE WHEN pt.pizza_topping_IsDouble = 1 THEN 2 ELSE 1 END) AS TotalUsed
+    t.topping_TopName AS Topping,
+    COALESCE(SUM(CASE 
+                    WHEN pt.pizza_topping_IsDouble = 1 THEN 2 
+                    WHEN pt.pizza_topping_IsDouble = 0 THEN 1 
+                    ELSE 0 
+                 END), 0) AS ToppingCount
 FROM 
-    pizza_topping pt
-JOIN 
-    topping t ON pt.topping_TopID = t.topping_TopID
+    topping t
+LEFT JOIN 
+    pizza_topping pt ON t.topping_TopID = pt.topping_TopID
 GROUP BY 
     t.topping_TopName
 ORDER BY 
-    TotalUsed DESC;
+    ToppingCount DESC;
 
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 -- VIEW 2: ProfitByPizza
 -- Description: Summarizes pizza profit by size and crust type over time.
 CREATE OR REPLACE VIEW ProfitByPizza AS
 SELECT 
-    p.pizza_Size AS PizzaSize,
-    p.pizza_CrustType AS CrustType,
-    DATE_FORMAT(p.pizza_PizzaDate, '%Y-%m') AS Month,
-    SUM(p.pizza_CustPrice - p.pizza_BusPrice) AS TotalProfit
+    p.pizza_Size AS `Size`,
+    p.pizza_CrustType AS `Crust`,
+    SUM(p.pizza_CustPrice - p.pizza_BusPrice) AS `Profit`,
+    DATE_FORMAT(p.pizza_PizzaDate, '%m/%Y') AS `OrderMonth`
 FROM 
     pizza p
 GROUP BY 
-    PizzaSize, CrustType, Month
+    `Size`, `Crust`, `OrderMonth`
 ORDER BY 
-    TotalProfit DESC;
+    `Profit` ASC;
 
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 -- VIEW 3: ProfitByOrderType
 -- Description: Summarizes profit by order type (dine-in, pickup, delivery) and month.
 CREATE OR REPLACE VIEW ProfitByOrderType AS
-SELECT 
-    o.ordertable_OrderType AS OrderType,
-    DATE_FORMAT(o.ordertable_OrderDateTime, '%Y-%m') AS Month,
-    SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS TotalProfit
-FROM 
-    ordertable o
-GROUP BY 
-    OrderType, Month
-ORDER BY 
-    OrderType, Month;
+(
+    SELECT 
+        o.ordertable_OrderType AS `OrderType`,
+        DATE_FORMAT(o.ordertable_OrderDateTime, '%m/%Y') AS `OrderMonth`,
+        SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
+        SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
+        SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `TotalProfit`
+    FROM 
+        ordertable o
+    GROUP BY 
+        `OrderType`, `OrderMonth`
 
+    UNION ALL
+    
+    SELECT 
+        'Grand Total' AS `OrderType`,
+        NULL AS `OrderMonth`,
+        SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
+        SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
+        SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `TotalProfit`
+    FROM 
+        ordertable o
+)
+ORDER BY 
+    CASE 
+        WHEN OrderType = 'Grand Total' THEN 1 
+        ELSE 0 
+    END,
+    `OrderType`, 
+    `OrderMonth`;
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
