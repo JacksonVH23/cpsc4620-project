@@ -113,7 +113,7 @@ INSERT INTO pizza (
         'Large',
         'Thin',
         'completed',
-        '2023-03-05 12:03:00',
+        '2024-03-05 12:03:00',
         19.75,
         3.68,
         @order_id);
