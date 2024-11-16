@@ -27,7 +27,7 @@ BEGIN
             VALUES (
                 'Large',
                 'Original',
-                'delivered',
+                'completed',
                 '2024-03-03 21:30:00',
                 cust_price,
                 bus_cost,

@@ -112,7 +112,7 @@ INSERT INTO pizza (
     VALUES (
         'Large',
         'Thin',
-        'processing',
+        'completed',
         '2023-03-05 12:03:00',
         19.75,
         3.68,
@@ -170,7 +170,7 @@ INSERT INTO pizza (
     VALUES (
         'Medium',
         'Pan',
-        'processing',
+        'completed',
         '2024-04-03 12:05:00',
         12.85,
         3.23,
@@ -203,7 +203,7 @@ INSERT INTO pizza (
     VALUES (
         'Small',
         'Original',
-        'processing',
+        'completed',
         '2024-04-03 12:05:00',
         6.93,
         1.40,
@@ -222,19 +222,26 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
 --          6 large original crust pizzas with Regular Cheese and Pepperoni
 --          (Price: $14.88, Cost: $3.30 each). Andrew’s phone number is 864-254-5861."
 
--- Insert customer details
-INSERT INTO customer (
-        customer_FName,
-        customer_LName,
-        customer_PhoneNum)
-    VALUES (
+SET @customer_id = (
+    SELECT customer_CustID
+    FROM customer
+    WHERE customer_FName = 'Andrew'
+      AND customer_LName = 'Wilkes-Krier'
+      AND customer_PhoneNum = '864-254-5861'
+);
+
+-- If the customer doesn't exist, insert them and get the ID
+INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
+    SELECT
         'Andrew',
         'Wilkes-Krier',
-        '864-254-5861');
+        '864-254-5861'
+    WHERE @customer_id IS NULL;
 
-SET @customer_id = LAST_INSERT_ID();
+-- Update the variable to the new ID if a row was inserted
+SET @customer_id = COALESCE(@customer_id, LAST_INSERT_ID());
 
--- Insert order for pickup
+-- Insert pickup order
 INSERT INTO ordertable (
         customer_CustID,
         ordertable_OrderType,
@@ -246,50 +253,27 @@ INSERT INTO ordertable (
         @customer_id,
         'pickup',
         '2024-03-03 21:30:00',
-        14.88 * 6,      -- Total customer price for six pizzas
-        3.30 * 6,       -- Total business cost for six pizzas
+        6 * 14.88, -- Total customer price for all pizzas
+        6 * 3.30,  -- Total business cost for all pizzas
         1);
 
 SET @order_id = LAST_INSERT_ID();
 
 -- Insert pickup details
-INSERT INTO pickup (ordertable_OrderID, pickup_IsPickedUp)
-    VALUES (@order_id, 1);
+INSERT INTO pickup (
+        ordertable_OrderID,
+        pickup_IsPickedUp)
+    VALUES (
+        @order_id,
+        1);
 
--- Insert each pizza (6 large original crust pizzas with same toppings)
-SET @cust_price = 14.88;
-SET @bus_cost = 3.30;
-
-WHILE @pizza_qty > 0 DO
-
-    -- Insert pizza details
-    INSERT INTO pizza (
-            pizza_Size,
-            pizza_CrustType,
-            pizza_PizzaState,
-            pizza_PizzaDate,
-            pizza_CustPrice,
-            pizza_BusPrice,
-            ordertable_OrderID)
-        VALUES (
-            'Large',
-            'Original',
-            'delivered',
-            '2024-03-03 21:30:00',
-            @cust_price,
-            @bus_cost,
-            @order_id);
-
-    SET @pizza_id = LAST_INSERT_ID();
-
-    -- Insert toppings for each pizza
-    INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
-        VALUES (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Regular Cheese'), 0),
-               (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Pepperoni'), 0);
-
-    SET @pizza_qty = @pizza_qty - 1;
-
-END WHILE;
+-- Use the stored procedure to insert 6 pizzas with Regular Cheese and Pepperoni toppings
+CALL InsertPizzaWithToppings(
+    6,         -- Number of pizzas
+    14.88,     -- Customer price per pizza
+    3.30,      -- Business cost per pizza
+    @order_id  -- Order ID to associate pizzas with
+);
 
 
 -- Order 4: "On April 20th at 7:11 pm there was a delivery order made by Andrew
@@ -302,26 +286,24 @@ END WHILE;
 --          discount applied to it. The pizzas were delivered to 115 Party Blvd, Anderson
 --          SC 29621. His phone number is the same as before."
 
--- Check if the customer exists, if not, insert customer details
 SET @customer_id = (
     SELECT customer_CustID
-        FROM customer
-        WHERE customer_FName = 'Andrew'
-        AND customer_LName = 'Wilkes-Krier'
-        AND customer_PhoneNum = '864-254-5861');
+    FROM customer
+    WHERE customer_FName = 'Andrew'
+      AND customer_LName = 'Wilkes-Krier'
+      AND customer_PhoneNum = '864-254-5861'
+);
 
-IF @customer_id IS NULL THEN
-    INSERT INTO customer (
-            customer_FName,
-            customer_LName,
-            customer_PhoneNum)
-        VALUES (
-            'Andrew',
-            'Wilkes-Krier',
-            '864-254-5861');
+-- If the customer doesn't exist, insert them and get the ID
+INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
+    SELECT
+        'Andrew',
+        'Wilkes-Krier',
+        '864-254-5861'
+    WHERE @customer_id IS NULL;
 
-    SET @customer_id = LAST_INSERT_ID();
-END IF;
+-- Update the variable to the new ID if a row was inserted
+SET @customer_id = COALESCE(@customer_id, LAST_INSERT_ID());
 
 -- Insert delivery order
 INSERT INTO ordertable (
@@ -359,7 +341,7 @@ INSERT INTO delivery (
         29621,
         1);
 
--- Insert first pizza (x-large original crust with Pepperoni and Sausage)
+-- Insert first pizza (Xlarge original crust with Pepperoni and Sausage)
 INSERT INTO pizza (
         pizza_Size,
         pizza_CrustType,
@@ -369,9 +351,9 @@ INSERT INTO pizza (
         pizza_BusPrice,
         ordertable_OrderID)
     VALUES (
-        'X-Large',
+        'XLarge',
         'Original',
-        'delivered',
+        'completed',
         '2024-04-20 19:11:00',
         27.94,
         9.19,
@@ -385,7 +367,7 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Pepperoni'), 0),
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Sausage'), 0);
 
--- Insert second pizza (x-large original crust with Ham (double) and Pineapple (double))
+-- Insert second pizza (Xlarge original crust with Ham (double) and Pineapple (double))
 INSERT INTO pizza (
         pizza_Size,
         pizza_CrustType,
@@ -395,9 +377,9 @@ INSERT INTO pizza (
         pizza_BusPrice,
         ordertable_OrderID)
     VALUES (
-        'X-Large',
+        'XLarge',
         'Original',
-        'delivered',
+        'completed',
         '2024-04-20 19:11:00',
         31.50,
         6.25,
@@ -415,7 +397,7 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
 INSERT INTO pizza_discount (pizza_PizzaID, discount_DiscountID)
     VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty Pizza'));
 
--- Insert third pizza (x-large original crust with Chicken and Bacon)
+-- Insert third pizza (Xlarge original crust with Chicken and Bacon)
 INSERT INTO pizza (
         pizza_Size,
         pizza_CrustType,
@@ -425,9 +407,9 @@ INSERT INTO pizza (
         pizza_BusPrice,
         ordertable_OrderID)
     VALUES (
-        'X-Large',
+        'XLarge',
         'Original',
-        'delivered',
+        'completed',
         '2024-04-20 19:11:00',
         26.75,
         8.18,
@@ -444,5 +426,298 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
 -- Apply "Gameday Special" discount to the entire order
 INSERT INTO order_discount (ordertable_OrderID, discount_DiscountID)
     VALUES (@order_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Gameday Special'));
+
+
+-- Order 5: "On March 2nd at 5:30 pm Matt Engers placed an order for pickup for an
+--          xlarge pizza with Green Pepper, Onion, Roma Tomatoes, Mushrooms, and
+--          Black Olives on it. He wants the Goat Cheese on it, and a Gluten Free
+--          Crust (Price: $27.45, Cost: $7.88). The “Specialty Pizza” discount is
+--          applied to the pizza. Matt’s phone number is 864-474-9953."
+
+-- Check if the customer exists, if not, insert customer details
+SET @customer_id = (
+    SELECT customer_CustID
+    FROM customer
+    WHERE customer_FName = 'Matt'
+      AND customer_LName = 'Engers'
+      AND customer_PhoneNum = '864-474-9953'
+);
+
+-- If the customer doesn't exist, insert them and get the ID
+INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
+    SELECT
+        'Matt',
+        'Engers',
+        '864-474-9953'
+    WHERE @customer_id IS NULL;
+
+-- Update the variable to the new ID if a row was inserted
+SET @customer_id = COALESCE(@customer_id, LAST_INSERT_ID());
+
+-- Insert pickup order
+INSERT INTO ordertable (
+        customer_CustID,
+        ordertable_OrderType,
+        ordertable_OrderDateTime,
+        ordertable_CustPrice,
+        ordertable_BusPrice,
+        ordertable_isComplete)
+    VALUES (
+        @customer_id,
+        'pickup',
+        '2024-03-02 17:30:00',
+        27.45, -- Customer price for the pizza
+        7.88,  -- Business cost for the pizza
+        1);
+
+SET @order_id = LAST_INSERT_ID();
+
+-- Insert pickup details
+INSERT INTO pickup (
+        ordertable_OrderID,
+        pickup_IsPickedUp)
+    VALUES (
+        @order_id,
+        1);
+
+-- Insert the pizza (Xlarge gluten-free crust with specified toppings)
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'XLarge',
+        'Gluten-Free',
+        'picked up',
+        '2024-03-02 17:30:00',
+        27.45,
+        7.88,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings for the pizza
+INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
+    VALUES (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Goat Cheese'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Green Pepper'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Onion'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Roma Tomato'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Mushrooms'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Black Olives'), 0);
+
+-- Apply "Specialty Pizza" discount to the pizza
+INSERT INTO pizza_discount (pizza_PizzaID, discount_DiscountID)
+    VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty Pizza'));
+
+
+-- Order 6: "On March 2nd at 6:17 pm Frank Turner places an order for delivery of one
+--          large pizza with Chicken, Green Peppers, Onions, and Mushrooms. He wants
+--          the Four Cheese Blend (extra) and thin crust (Price: $25.81, Cost: $4.24).
+--          The pizza was delivered to 6745 Wessex St Anderson SC 29621. Frank’s phone
+--          number is 864-232-8944."
+
+-- Check if the customer exists, if not, insert customer details
+SET @customer_id = (
+    SELECT customer_CustID
+    FROM customer
+    WHERE customer_FName = 'Frank'
+      AND customer_LName = 'Turner'
+      AND customer_PhoneNum = '864-232-8944'
+);
+
+-- If the customer doesn't exist, insert them and get the ID
+INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
+    SELECT
+        'Frank',
+        'Turner',
+        '864-232-8944'
+    WHERE @customer_id IS NULL;
+
+-- Update the variable to the new ID if a row was inserted
+SET @customer_id = COALESCE(@customer_id, LAST_INSERT_ID());
+
+-- Insert delivery order
+INSERT INTO ordertable (
+        customer_CustID,
+        ordertable_OrderType,
+        ordertable_OrderDateTime,
+        ordertable_CustPrice,
+        ordertable_BusPrice,
+        ordertable_isComplete)
+    VALUES (
+        @customer_id,
+        'delivery',
+        '2024-03-02 18:17:00',
+        25.81, -- Customer price for the pizza
+        4.24,  -- Business cost for the pizza
+        1);
+
+SET @order_id = LAST_INSERT_ID();
+
+-- Insert delivery details
+INSERT INTO delivery (
+        ordertable_OrderID,
+        delivery_HouseNum,
+        delivery_Street,
+        delivery_City,
+        delivery_State,
+        delivery_Zip,
+        delivery_isDelivered)
+    VALUES (
+        @order_id,
+        6745,
+        'Wessex St',
+        'Anderson',
+        'SC',
+        29621,
+        1);
+
+-- Insert the pizza (large thin crust with specified toppings)
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'Large',
+        'Thin',
+        'completed',
+        '2024-03-02 18:17:00',
+        25.81,
+        4.24,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings for the pizza
+INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
+    VALUES (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Four Cheese Blend'), 1),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Chicken'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Green Pepper'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Onion'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Mushrooms'), 0);
+
+
+-- Order 7: "On April 13th at 8:32 pm Milo Auckerman ordered two large thin crust pizzas.
+--          One had the Four Cheese Blend on it (extra) (Price: $18.00, Cost: $2.75),
+--          the other was Regular Cheese and Pepperoni (extra) (Price: $19.25, Cost: $3.25).
+--          He used the “Employee” discount on his order. He had them delivered to 8879
+--          Suburban Home, Anderson, SC 29621. His phone number is 864-878-5679."
+
+-- Check if the customer exists, if not, insert customer details
+SET @customer_id = (
+    SELECT customer_CustID
+    FROM customer
+    WHERE customer_FName = 'Milo'
+      AND customer_LName = 'Auckerman'
+      AND customer_PhoneNum = '864-878-5679'
+);
+
+-- If the customer doesn't exist, insert them and get the ID
+INSERT INTO customer (customer_FName, customer_LName, customer_PhoneNum)
+    SELECT
+        'Milo',
+        'Auckerman',
+        '864-878-5679'
+    WHERE @customer_id IS NULL;
+
+-- Update the variable to the new ID if a row was inserted
+SET @customer_id = COALESCE(@customer_id, LAST_INSERT_ID());
+
+-- Insert delivery order
+INSERT INTO ordertable (
+        customer_CustID,
+        ordertable_OrderType,
+        ordertable_OrderDateTime,
+        ordertable_CustPrice,
+        ordertable_BusPrice,
+        ordertable_isComplete)
+    VALUES (
+        @customer_id,
+        'delivery',
+        '2024-04-13 20:32:00',
+        18.00 + 19.25, -- Total customer price for both pizzas
+        2.75 + 3.25,   -- Total business cost for both pizzas
+        1);
+
+SET @order_id = LAST_INSERT_ID();
+
+-- Insert delivery details
+INSERT INTO delivery (
+        ordertable_OrderID,
+        delivery_HouseNum,
+        delivery_Street,
+        delivery_City,
+        delivery_State,
+        delivery_Zip,
+        delivery_isDelivered)
+    VALUES (
+        @order_id,
+        8879,
+        'Suburban Home',
+        'Anderson',
+        'SC',
+        29621,
+        1);
+
+-- Insert first pizza (large thin crust with Four Cheese Blend (extra))
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'Large',
+        'Thin',
+        'completed',
+        '2024-04-13 20:32:00',
+        18.00,
+        2.75,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings for first pizza
+INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
+    VALUES (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Four Cheese Blend'), 1);
+
+-- Insert second pizza (large thin crust with Regular Cheese and Pepperoni (extra))
+INSERT INTO pizza (
+        pizza_Size,
+        pizza_CrustType,
+        pizza_PizzaState,
+        pizza_PizzaDate,
+        pizza_CustPrice,
+        pizza_BusPrice,
+        ordertable_OrderID)
+    VALUES (
+        'Large',
+        'Thin',
+        'completed',
+        '2024-04-13 20:32:00',
+        19.25,
+        3.25,
+        @order_id);
+
+SET @pizza_id = LAST_INSERT_ID();
+
+-- Insert toppings for second pizza
+INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
+    VALUES (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Regular Cheese'), 0),
+           (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Pepperoni'), 1);
+
+-- Apply "Employee" discount to the entire order
+INSERT INTO order_discount (ordertable_OrderID, discount_DiscountID)
+    VALUES (@order_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Employee'));
 
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
