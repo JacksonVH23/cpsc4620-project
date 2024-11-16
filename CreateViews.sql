@@ -6,10 +6,6 @@
 
 USE PizzaDB;
 
-DROP VIEW IF EXISTS ToppingPopularity;
-DROP VIEW IF EXISTS ProfitByPizza;
-DROP VIEW IF EXISTS ProfitByOrderType;
-
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 -- VIEW 1: ToppingPopularity
 -- Description: Ranks all toppings (including double toppings) by popularity.
