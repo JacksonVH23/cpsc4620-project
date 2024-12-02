@@ -128,7 +128,6 @@ public final class DBNinja {
 
 	}
 
-
 	public static ArrayList<Order> getOrders(int status) throws SQLException, IOException
 	 {
 	/*
@@ -142,7 +141,7 @@ public final class DBNinja {
 	 *
 	 * You must fully populate the Order object, this includes order discounts,
 	 * and pizzas along with the toppings and discounts associated with them.
-	 * 
+	 *
 	 * Don't forget to order the data coming from the database appropriately.
 	 *
 	 */
@@ -168,28 +167,69 @@ public final class DBNinja {
 		 */
 		 return null;
 	}
-		
-	public static ArrayList<Discount> getDiscountList() throws SQLException, IOException 
-	{
-		/* 
-		 * Query the database for all the available discounts and 
-		 * return them in an arrayList of discounts ordered by discount name.
-		 * 
-		*/
+
+	public static ArrayList<Discount> getDiscountList() throws SQLException, IOException {
+		ArrayList<Discount> discountList = new ArrayList<>();
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT discount_DiscountID, discount_Name, discount_Amount, discount_IsPercent " +
+				"FROM discount " +
+				"ORDER BY discount_Name;";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+			while (rs.next()) {
+				int discountID = rs.getInt("discount_DiscountID");
+				String discountName = rs.getString("discount_Name");
+				double amount = rs.getDouble("discount_Amount");
+				boolean isPercent = rs.getBoolean("discount_IsPercent");
+
+				// Create a Discount object and add it to the list
+				Discount discount = new Discount(discountID, discountName, amount, isPercent);
+				discountList.add(discount);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving discount list", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return discountList;
+	}
+
+	public static Discount findDiscountByName(String name) throws SQLException, IOException {
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT discount_DiscountID, discount_Name, discount_Amount, discount_IsPercent " +
+				"FROM discount WHERE discount_Name = ?;";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, name); // Set the name parameter in the query
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					int discountID = rs.getInt("discount_DiscountID");
+					String discountName = rs.getString("discount_Name");
+					double amount = rs.getDouble("discount_Amount");
+					boolean isPercent = rs.getBoolean("discount_IsPercent");
+
+					// Create and return the Discount object
+					return new Discount(discountID, discountName, amount, isPercent);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving discount by name", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		// Return null if no discount is found
 		return null;
 	}
-
-	public static Discount findDiscountByName(String name) throws SQLException, IOException 
-	{
-		/*
-		 * Query the database for a discount using it's name.
-		 * If found, then return an OrderDiscount object for the discount.
-		 * If it's not found....then return null
-		 *  
-		 */
-		 return null;
-	}
-
 
 	public static ArrayList<Customer> getCustomerList() throws SQLException, IOException {
 		ArrayList<Customer> customerList = new ArrayList<>();
@@ -225,16 +265,38 @@ public final class DBNinja {
 		return customerList;
 	}
 
-	public static Customer findCustomerByPhone(String phoneNumber)  throws SQLException, IOException 
-	{
-		/*
-		 * Query the database for a customer using a phone number.
-		 * If found, then return a Customer object for the customer.
-		 * If it's not found....then return null
-		 *  
-		 */
-		 return null;
+	public static Customer findCustomerByPhone(String phoneNumber) throws SQLException, IOException {
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT customer_CustID, customer_FName, customer_LName, customer_PhoneNum " +
+				"FROM customer WHERE customer_PhoneNum = ?;";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, phoneNumber); // Set the phone number parameter in the query
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					int custID = rs.getInt("customer_CustID");
+					String firstName = rs.getString("customer_FName");
+					String lastName = rs.getString("customer_LName");
+					String phone = rs.getString("customer_PhoneNum");
+
+					// Create and return the Customer object
+					return new Customer(custID, firstName, lastName, phone);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving customer by phone number", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		// Return null if no customer is found
+		return null;
 	}
+
 
 	public static String getCustomerName(int CustID) throws SQLException, IOException 
 	{
@@ -298,36 +360,128 @@ public final class DBNinja {
 	}
 
 
-	public static ArrayList<Topping> getToppingList() throws SQLException, IOException 
-	{
-		/*
-		 * Query the database for the aviable toppings and 
-		 * return an arrayList of all the available toppings. 
-		 * Don't forget to order the data coming from the database appropriately.
-		 * 
-		 */
+	public static ArrayList<Topping> getToppingList() throws SQLException, IOException {
+		ArrayList<Topping> toppingList = new ArrayList<>();
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT topping_TopID, topping_TopName, topping_SmallAMT, topping_MedAMT, topping_LgAMT, " +
+				"topping_XLAMT, topping_CustPrice, topping_BusPrice, topping_MinINVT, topping_CurINVT " +
+				"FROM topping " +
+				"ORDER BY topping_TopName;";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+			while (rs.next()) {
+				int topID = rs.getInt("topping_TopID");
+				String topName = rs.getString("topping_TopName");
+				double smallAMT = rs.getDouble("topping_SmallAMT");
+				double medAMT = rs.getDouble("topping_MedAMT");
+				double lgAMT = rs.getDouble("topping_LgAMT");
+				double xlAMT = rs.getDouble("topping_XLAMT");
+				double custPrice = rs.getDouble("topping_CustPrice");
+				double busPrice = rs.getDouble("topping_BusPrice");
+				int minINVT = rs.getInt("topping_MinINVT");
+				int curINVT = rs.getInt("topping_CurINVT");
+
+				// Create a Topping object and add it to the list
+				Topping topping = new Topping(topID, topName, smallAMT, medAMT, lgAMT, xlAMT, custPrice, busPrice, minINVT, curINVT);
+				toppingList.add(topping);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving topping list", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return toppingList;
+	}
+
+
+	public static Topping findToppingByName(String toppingName) throws SQLException, IOException {
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT topping_TopID, topping_TopName, topping_SmallAMT, topping_MedAMT, topping_LgAMT, " +
+				"topping_XLAMT, topping_CustPrice, topping_BusPrice, topping_MinINVT, topping_CurINVT " +
+				"FROM topping " +
+				"WHERE topping_TopName = ?;";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, toppingName); // Set the topping name parameter in the query
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					int topID = rs.getInt("topping_TopID");
+					String name = rs.getString("topping_TopName");
+					double smallAMT = rs.getDouble("topping_SmallAMT");
+					double medAMT = rs.getDouble("topping_MedAMT");
+					double lgAMT = rs.getDouble("topping_LgAMT");
+					double xlAMT = rs.getDouble("topping_XLAMT");
+					double custPrice = rs.getDouble("topping_CustPrice");
+					double busPrice = rs.getDouble("topping_BusPrice");
+					int minINVT = rs.getInt("topping_MinINVT");
+					int curINVT = rs.getInt("topping_CurINVT");
+
+					// Create and return the Topping object
+					return new Topping(topID, name, smallAMT, medAMT, lgAMT, xlAMT, custPrice, busPrice, minINVT, curINVT);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving topping by name", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		// Return null if no topping is found
 		return null;
 	}
 
-	public static Topping findToppingByName(String name) throws SQLException, IOException 
-	{
-		/*
-		 * Query the database for the topping using it's name.
-		 * If found, then return a Topping object for the topping.
-		 * If it's not found....then return null
-		 *  
-		 */
-		 return null;
-	}
 
-	public static ArrayList<Topping> getToppingsOnPizza(Pizza p) throws SQLException, IOException 
-	{
-		/* 
-		 * This method builds an ArrayList of the toppings ON a pizza.
-		 * The list can then be added to the Pizza object elsewhere in the
-		 */
+	public static ArrayList<Topping> getToppingsOnPizza(Pizza p) throws SQLException, IOException {
+		ArrayList<Topping> toppings = new ArrayList<>();
+		connect_to_db(); // Establish database connection
 
-		return null;	
+		String query = "SELECT t.topping_TopID, t.topping_TopName, t.topping_SmallAMT, t.topping_MedAMT, " +
+				"t.topping_LgAMT, t.topping_XLAMT, t.topping_CustPrice, t.topping_BusPrice, " +
+				"t.topping_MinINVT, t.topping_CurINVT, pt.isExtra " +
+				"FROM pizzatopping pt " +
+				"JOIN topping t ON pt.topping_TopID = t.topping_TopID " +
+				"WHERE pt.pizza_PizzaID = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setInt(1, p.getPizzaID()); // Bind pizza ID to query
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					int topID = rs.getInt("topping_TopID");
+					String topName = rs.getString("topping_TopName");
+					double smallAMT = rs.getDouble("topping_SmallAMT");
+					double medAMT = rs.getDouble("topping_MedAMT");
+					double lgAMT = rs.getDouble("topping_LgAMT");
+					double xlAMT = rs.getDouble("topping_XLAMT");
+					double custPrice = rs.getDouble("topping_CustPrice");
+					double busPrice = rs.getDouble("topping_BusPrice");
+					int minINVT = rs.getInt("topping_MinINVT");
+					int curINVT = rs.getInt("topping_CurINVT");
+					boolean isExtra = rs.getBoolean("isExtra");
+
+					Topping topping = new Topping(topID, topName, smallAMT, medAMT, lgAMT, xlAMT, custPrice, busPrice, minINVT, curINVT);
+					topping.setDoubled(isExtra); // Set if the topping is extra (doubled)
+					toppings.add(topping);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving toppings for the pizza", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close database connection
+			}
+		}
+
+		return toppings;
 	}
 
 	public static void addToInventory(int toppingID, double quantity) throws SQLException, IOException 
@@ -337,35 +491,125 @@ public final class DBNinja {
 		 * 
 		 * */
 	}
-	
-	
-	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException 
-	{
-		/*
-		 * Build an ArrayList of all the Pizzas associated with the Order.
-		 * 
-		 */
-		return null;
+
+
+	public static ArrayList<Pizza> getPizzas(Order o) throws SQLException, IOException {
+		ArrayList<Pizza> pizzas = new ArrayList<>();
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT p.pizza_PizzaID, p.pizza_CrustType, p.pizza_Size, p.ordertable_OrderID, " +
+				"p.pizza_PizzaState, p.pizza_PizzaDate, p.pizza_CustPrice, p.pizza_BusPrice " +
+				"FROM pizza p " +
+				"WHERE p.order_OrderID = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setInt(1, o.getOrderID()); // Bind the Order ID to the query
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					int pizzaID = rs.getInt("pizza_PizzaID");
+					String crustType = rs.getString("pizza_CrustType");
+					String size = rs.getString("pizza_Size");
+					int orderID = rs.getInt("ordertable_OrderID");
+					String state = rs.getString("pizza_PizzaState");
+					String date = rs.getString("pizza_PizzaDate");
+					double custPrice = rs.getDouble("pizza_CustPrice");
+					double busPrice = rs.getDouble("pizza_BusPrice");
+
+					// Create a Pizza object
+					Pizza pizza = new Pizza(pizzaID, size, crustType, orderID, state, date, custPrice, busPrice);
+
+					// Populate toppings for the pizza
+					ArrayList<Topping> toppings = getToppingsOnPizza(pizza);
+					pizza.setToppings(toppings);
+
+					// Populate discounts for the pizza
+					ArrayList<Discount> discounts = getDiscounts(pizza);
+					pizza.setDiscounts(discounts);
+
+					// Add the pizza to the list
+					pizzas.add(pizza);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving pizzas for the order", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return pizzas;
 	}
 
-	public static ArrayList<Discount> getDiscounts(Order o) throws SQLException, IOException 
-	{
-		/* 
-		 * Build an array list of all the Discounts associted with the Order.
-		 * 
-		 */
+	public static ArrayList<Discount> getDiscounts(Order o) throws SQLException, IOException {
+		ArrayList<Discount> discounts = new ArrayList<>();
+		connect_to_db(); // Establish database connection
 
-		return null;
+		String query = "SELECT d.discount_DiscountID, d.discount_DiscountName, d.discount_Amount, d.discount_IsPercent " +
+				"FROM order_discount od " +
+				"JOIN discount d ON od.discount_DiscountID = d.discount_DiscountID " +
+				"WHERE od.ordertable_OrderID = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setInt(1, o.getOrderID()); // Bind the Order ID to the query
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					int discountID = rs.getInt("discount_DiscountID");
+					String discountName = rs.getString("discount_DiscountName");
+					double amount = rs.getDouble("discount_Amount");
+					boolean isPercent = rs.getBoolean("discount_IsPercent");
+
+					// Create a Discount object
+					Discount discount = new Discount(discountID, discountName, amount, isPercent);
+					discounts.add(discount);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving discounts for the order", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return discounts;
 	}
 
-	public static ArrayList<Discount> getDiscounts(Pizza p) throws SQLException, IOException 
-	{
-		/* 
-		 * Build an array list of all the Discounts associted with the Pizza.
-		 * 
-		 */
-	
-		return null;
+	public static ArrayList<Discount> getDiscounts(Pizza p) throws SQLException, IOException {
+		ArrayList<Discount> discounts = new ArrayList<>();
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT d.discount_DiscountID, d.discount_DiscountName, d.discount_Amount, d.discount_IsPercent " +
+				"FROM pizza_discount pd " +
+				"JOIN discount d ON pd.discount_DiscountID = d.discount_DiscountID " +
+				"WHERE pd.pizza_PizzaID = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setInt(1, p.getPizzaID()); // Bind the Pizza ID to the query
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					int discountID = rs.getInt("discount_DiscountID");
+					String discountName = rs.getString("discount_DiscountName");
+					double amount = rs.getDouble("discount_Amount");
+					boolean isPercent = rs.getBoolean("discount_IsPercent");
+
+					// Create a Discount object
+					Discount discount = new Discount(discountID, discountName, amount, isPercent);
+					discounts.add(discount);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving discounts for the pizza", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return discounts;
 	}
 
 	public static double getBaseCustPrice(String size, String crust) throws SQLException, IOException 
