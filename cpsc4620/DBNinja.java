@@ -191,14 +191,38 @@ public final class DBNinja {
 	}
 
 
-	public static ArrayList<Customer> getCustomerList() throws SQLException, IOException 
-	{
-		/*
-		 * Query the data for all the customers and return an arrayList of all the customers. 
-		 * Don't forget to order the data coming from the database appropriately.
-		 * 
-		*/
-		return null;
+	public static ArrayList<Customer> getCustomerList() throws SQLException, IOException {
+		ArrayList<Customer> customerList = new ArrayList<>();
+
+		connect_to_db(); // Establish connection
+
+		String query = "SELECT customer_CustID, customer_FName, customer_LName,customer_PhoneNum " +
+				"FROM customer " +
+				"ORDER BY customer_LName, customer_FName, customer_PhoneNum;";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+			while (rs.next()) {
+				int custID = rs.getInt("customer_CustID");
+				String fName = rs.getString("customer_FName");
+				String lName = rs.getString("customer_LName");
+				String phone = rs.getString("customer_PhoneNum");
+
+				// Create a Customer object
+				Customer customer = new Customer(custID, fName, lName, phone);
+
+				// Add to the list
+				customerList.add(customer);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving customer list", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Ensure the connection is closed
+			}
+		}
+
+		return customerList;
 	}
 
 	public static Customer findCustomerByPhone(String phoneNumber)  throws SQLException, IOException 
