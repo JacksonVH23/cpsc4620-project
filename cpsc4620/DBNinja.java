@@ -693,57 +693,114 @@ public final class DBNinja {
 		return discounts;
 	}
 
-	public static double getBaseCustPrice(String size, String crust) throws SQLException, IOException 
-	{
-		/* 
-		 * Query the database fro the base customer price for that size and crust pizza.
-		 * 
-		*/
-		return 0.0;
+	public static double getBaseCustPrice(String size, String crust) throws SQLException, IOException {
+		double baseCustPrice = 0.0;
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT baseprice_CustPrice FROM baseprice WHERE baseprice_Size = ? AND baseprice_CrustType = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, size);
+			stmt.setString(2, crust);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					baseCustPrice = rs.getDouble("baseprice_CustPrice");
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving base customer price for size: " + size + " and crust: " + crust, e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return baseCustPrice;
 	}
 
-	public static double getBaseBusPrice(String size, String crust) throws SQLException, IOException 
-	{
-		/* 
-		 * Query the database fro the base business price for that size and crust pizza.
-		 * 
-		*/
-		return 0.0;
+	public static double getBaseBusPrice(String size, String crust) throws SQLException, IOException {
+		double baseBusPrice = 0.0;
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT baseprice_BusPrice FROM baseprice WHERE baseprice_Size = ? AND baseprice_CrustType = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(query)) {
+			stmt.setString(1, size);
+			stmt.setString(2, crust);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					baseBusPrice = rs.getDouble("baseprice_BusPrice");
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving base business price for size: " + size + " and crust: " + crust, e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
+
+		return baseBusPrice;
 	}
 
-	
-	public static void printToppingPopReport() throws SQLException, IOException
-	{
-		/*
-		 * Prints the ToppingPopularity view. Remember that this view
-		 * needs to exist in your DB, so be sure you've run your createViews.sql
-		 * files on your testing DB if you haven't already.
-		 * 
-		 * The result should be readable and sorted as indicated in the prompt.
-		 * 
-		 * HINT: You need to match the expected output EXACTLY....I would suggest
-		 * you look at the printf method (rather that the simple print of println).
-		 * It operates the same in Java as it does in C and will make your code
-		 * better.
-		 * 
-		 */
+	public static void printToppingPopReport() throws SQLException, IOException {
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT Topping, ToppingCount FROM ToppingPopularity";
+
+		try (Statement stmt = conn.createStatement();
+			 ResultSet rs = stmt.executeQuery(query)) {
+
+			// Print header
+			System.out.printf("%-20s %-15s%n", "Topping", "Topping Count");
+			System.out.printf("%-20s %-15s%n", "-------", "-------------");
+
+			// Print each row
+			while (rs.next()) {
+				String toppingName = rs.getString("Topping");
+				int toppingCount = rs.getInt("ToppingCount");
+				System.out.printf("%-20s %-15d%n", toppingName, toppingCount);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving the ToppingPopularity report", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
 	}
-	
-	public static void printProfitByPizzaReport() throws SQLException, IOException 
-	{
-		/*
-		 * Prints the ProfitByPizza view. Remember that this view
-		 * needs to exist in your DB, so be sure you've run your createViews.sql
-		 * files on your testing DB if you haven't already.
-		 * 
-		 * The result should be readable and sorted as indicated in the prompt.
-		 * 
-		 * HINT: You need to match the expected output EXACTLY....I would suggest
-		 * you look at the printf method (rather that the simple print of println).
-		 * It operates the same in Java as it does in C and will make your code
-		 * better.
-		 * 
-		 */
+
+	public static void printProfitByPizzaReport() throws SQLException, IOException {
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT Size, Crust, Profit, OrderMonth FROM ProfitByPizza";
+
+		try (Statement stmt = conn.createStatement();
+			 ResultSet rs = stmt.executeQuery(query)) {
+
+			// Print header
+			System.out.printf("%-12s %-12s %-10s %-15s%n", "Pizza Size", "Pizza Crust", "Profit", "Last Order Date");
+			System.out.printf("%-12s %-12s %-10s %-15s%n", "----------", "-----------", "------", "---------------");
+
+			// Print each row
+			while (rs.next()) {
+				String pizzaSize = rs.getString("Size");
+				String pizzaCrust = rs.getString("Crust");
+				double profit = rs.getDouble("Profit");
+				String lastOrderDate = rs.getString("OrderMonth");
+				System.out.printf("%-12s %-12s $%-9.2f %-15s%n", pizzaSize, pizzaCrust, profit, lastOrderDate);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving the ProfitByPizza report", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
 	}
 	
 	public static void printProfitByOrderType() throws SQLException, IOException

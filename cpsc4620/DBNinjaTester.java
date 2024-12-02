@@ -17,7 +17,12 @@ public class DBNinjaTester {
             System.out.println("2. Test getLastOrder");
             System.out.println("3. Test getPizzas");
             System.out.println("4. Test getDiscounts (Order)");
-            System.out.println("5. Exit");
+            System.out.println("5. Test getBaseCustPrice");
+            System.out.println("6. Test getBaseBusPrice");
+            System.out.println("7. Test printToppingPopReport");
+            System.out.println("8. Test printProfitByPizzaReport");
+            System.out.println("9. Exit");
+
             System.out.print("Enter your choice: ");
 
             String choice = scanner.nextLine();
@@ -36,9 +41,22 @@ public class DBNinjaTester {
                     testGetDiscountsOnOrder();
                     break;
                 case "5":
+                    testGetBaseCustPrice();
+                    break;
+                case "6":
+                    testGetBaseBusPrice();
+                    break;
+                case "7":
+                    testPrintToppingPopReport();
+                    break;
+                case "8":
+                    testPrintProfitByPizzaReport();
+                    break;
+                case "9":
                     System.out.println("Exiting...");
                     running = false;
                     break;
+
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
@@ -188,4 +206,80 @@ public class DBNinjaTester {
             e.printStackTrace();
         }
     }
+
+    // Test method for getBaseCustPrice
+    private static void testGetBaseCustPrice() {
+        System.out.println("\n--- Testing getBaseCustPrice ---");
+        try {
+            // Test valid combinations
+            String[][] validCases = {
+                    {"Small", "Thin"},
+                    {"Medium", "Pan"},
+                    {"Large", "Gluten-Free"},
+                    {"XLarge", "Original"}
+            };
+            for (String[] testCase : validCases) {
+                String size = testCase[0];
+                String crust = testCase[1];
+                System.out.println("Testing size: " + size + ", crust: " + crust);
+                double custPrice = DBNinja.getBaseCustPrice(size, crust);
+                System.out.println("Customer Price: $" + custPrice);
+            }
+
+            // Test invalid combination
+            System.out.println("\nTesting invalid combination: size: 'Mega', crust: 'Stuffed'");
+            double invalidCustPrice = DBNinja.getBaseCustPrice("Mega", "Stuffed");
+            System.out.println("Customer Price: $" + invalidCustPrice);
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Test method for getBaseBusPrice
+    private static void testGetBaseBusPrice() {
+        System.out.println("\n--- Testing getBaseBusPrice ---");
+        try {
+            // Test valid combinations
+            String[][] validCases = {
+                    {"Small", "Original"},
+                    {"Medium", "Gluten-Free"},
+                    {"Large", "Pan"},
+                    {"XLarge", "Thin"}
+            };
+            for (String[] testCase : validCases) {
+                String size = testCase[0];
+                String crust = testCase[1];
+                System.out.println("Testing size: " + size + ", crust: " + crust);
+                double busPrice = DBNinja.getBaseBusPrice(size, crust);
+                System.out.println("Business Price: $" + busPrice);
+            }
+
+            // Test invalid combination
+            System.out.println("\nTesting invalid combination: size: 'Tiny', crust: 'Cheese-Stuffed'");
+            double invalidBusPrice = DBNinja.getBaseBusPrice("Tiny", "Cheese-Stuffed");
+            System.out.println("Business Price: $" + invalidBusPrice);
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Test method for printToppingPopReport
+    private static void testPrintToppingPopReport() {
+        System.out.println("\n--- Testing printToppingPopReport ---");
+        try {
+            DBNinja.printToppingPopReport(); // Call the method to print the report
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+    // Test method for printProfitByPizzaReport
+    private static void testPrintProfitByPizzaReport() {
+        System.out.println("\n--- Testing printProfitByPizzaReport ---");
+        try {
+            DBNinja.printProfitByPizzaReport(); // Call the method to print the report
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
