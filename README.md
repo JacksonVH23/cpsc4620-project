@@ -13,5 +13,6 @@
    - Use whatever the most recent version is, I used "Oracle OpenJDK 23.0.1"
 6. Once the Java SDK is installed, then go to 'Libraries' and click the + Icon
 7. Navigate inside the 'mysql-connector' folder in this repo and click on the .jar file, then click Apply to add it to the Library
-8. Finally, modify the values in DBConnector.java to authenticate to your DB
+   - This part may already be done/configured as part of the repo, if there's already an entry for mysql-connector in the Libraries then skip this
+9. Finally, modify the values in DBConnector.java to authenticate to your DB
    - IMPORTANT: Leave the "jdbc:mysql://" at the beginning of the URL - this is needed to work with the driver
