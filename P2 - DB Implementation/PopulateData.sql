@@ -46,7 +46,7 @@ INSERT INTO discount (
         ('Employee', 15.00, 1),
         ('Lunch Special Medium', 1.00, 0),
         ('Lunch Special Large', 2.00, 0),
-        ('Specialty Pizza', 1.50, 0),
+        ('Specialty pizza', 1.50, 0),
         ('Happy Hour', 10.00, 1),
         ('Gameday Special', 20.00, 1);
 
@@ -134,7 +134,7 @@ INSERT INTO pizza_discount (pizza_PizzaID, discount_DiscountID)
 -- Order 2: "On April 3rd at 12:05 pm there was a dine-in order (at table 4). They ordered
 --          a medium pan pizza with Feta Cheese, Black Olives, Roma Tomatoes, Mushrooms
 --          and Banana Peppers (Price: $12.85, Cost: $3.23). They used the
---          'Lunch Special Medium' and the 'Specialty Pizza' discounts for the pizza.
+--          'Lunch Special Medium' and the 'Specialty pizza' discounts for the pizza.
 --          They also ordered a small original crust pizza with Regular Cheese, Chicken
 --          and Banana Peppers (Price: $6.93, Cost: $1.40)."
 
@@ -188,8 +188,7 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
 
 -- Apply discounts to first pizza
 INSERT INTO pizza_discount (pizza_PizzaID, discount_DiscountID)
-    VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Lunch Special Medium')),
-           (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty Pizza'));
+        VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty pizza'));
 
 -- Insert second pizza (small original crust) into pizza table
 INSERT INTO pizza (
@@ -209,6 +208,10 @@ INSERT INTO pizza (
         1.40,
         @order_id);
 
+-- Apply "Lunch Special Medium" discount to the entire order
+INSERT INTO order_discount (ordertable_OrderID, discount_DiscountID)
+    VALUES (@order_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Lunch Special Medium'));
+
 SET @pizza_id = LAST_INSERT_ID();
 
 -- Insert toppings for second pizza
@@ -216,6 +219,8 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
     VALUES (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Regular Cheese'), 0),
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Chicken'), 0),
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Banana Peppers'), 0);
+
+
 
 
 -- Order 3: "On March 3rd at 9:30 pm Andrew Wilkes-Krier placed an order for pickup of
@@ -282,7 +287,7 @@ CALL InsertPizzaWithToppings(
 --          (extra) pizza (Price: $31.50, Cost: $6.25), and one xlarge Chicken and Bacon
 --          pizza (Price: $26.75, Cost: $8.18). All the pizzas have the Four Cheese Blend
 --          on it and are original crust. The order has the “Gameday Special” discount
---          applied to it, and the ham and pineapple pizza has the “Specialty Pizza”
+--          applied to it, and the ham and pineapple pizza has the “Specialty pizza”
 --          discount applied to it. The pizzas were delivered to 115 Party Blvd, Anderson
 --          SC 29621. His phone number is the same as before."
 
@@ -393,9 +398,9 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Ham'), 1),
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Pineapple'), 1);
 
--- Apply "Specialty Pizza" discount to second pizza
+-- Apply "Specialty pizza" discount to second pizza
 INSERT INTO pizza_discount (pizza_PizzaID, discount_DiscountID)
-    VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty Pizza'));
+    VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty pizza'));
 
 -- Insert third pizza (Xlarge original crust with Chicken and Bacon)
 INSERT INTO pizza (
@@ -431,7 +436,7 @@ INSERT INTO order_discount (ordertable_OrderID, discount_DiscountID)
 -- Order 5: "On March 2nd at 5:30 pm Matt Engers placed an order for pickup for an
 --          xlarge pizza with Green Pepper, Onion, Roma Tomatoes, Mushrooms, and
 --          Black Olives on it. He wants the Goat Cheese on it, and a Gluten Free
---          Crust (Price: $27.45, Cost: $7.88). The “Specialty Pizza” discount is
+--          Crust (Price: $27.45, Cost: $7.88). The “Specialty pizza” discount is
 --          applied to the pizza. Matt’s phone number is 864-474-9953."
 
 -- Check if the customer exists, if not, insert customer details
@@ -509,9 +514,9 @@ INSERT INTO pizza_topping (pizza_PizzaID, topping_TopID, pizza_topping_IsDouble)
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Mushrooms'), 0),
            (@pizza_id, (SELECT topping_topID FROM topping WHERE topping_TopName = 'Black Olives'), 0);
 
--- Apply "Specialty Pizza" discount to the pizza
+-- Apply "Specialty pizza" discount to the pizza
 INSERT INTO pizza_discount (pizza_PizzaID, discount_DiscountID)
-    VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty Pizza'));
+    VALUES (@pizza_id, (SELECT discount_DiscountID FROM discount WHERE discount_DiscountName = 'Specialty pizza'));
 
 
 -- Order 6: "On March 2nd at 6:17 pm Frank Turner places an order for delivery of one

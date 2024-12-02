@@ -70,11 +70,11 @@ CREATE OR REPLACE VIEW ProfitByOrderType AS
         ordertable o
 )
 ORDER BY 
-    CASE 
-        WHEN `customerType` = 'dinein' THEN 1
-        WHEN `customerType` = 'pickup' THEN 2
-        WHEN `customerType` = 'delivery' THEN 3
-        ELSE 4
-    END,
-    `OrderMonth`;
+        CASE 
+            WHEN `customerType` = 'dinein' THEN 1
+            WHEN `customerType` = 'pickup' THEN 2
+            WHEN `customerType` = 'delivery' THEN 3
+            ELSE 4
+        END,
+        `Profit` DESC;
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
