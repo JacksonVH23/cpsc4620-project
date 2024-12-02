@@ -21,7 +21,8 @@ public class DBNinjaTester {
             System.out.println("6. Test getBaseBusPrice");
             System.out.println("7. Test printToppingPopReport");
             System.out.println("8. Test printProfitByPizzaReport");
-            System.out.println("9. Exit");
+            System.out.println("9. Test printProfitByOrderType");
+            System.out.println("10. Exit");
 
             System.out.print("Enter your choice: ");
 
@@ -53,6 +54,9 @@ public class DBNinjaTester {
                     testPrintProfitByPizzaReport();
                     break;
                 case "9":
+                    testPrintProfitByOrderType();
+                    break;
+                case "10":
                     System.out.println("Exiting...");
                     running = false;
                     break;
@@ -277,6 +281,16 @@ public class DBNinjaTester {
         System.out.println("\n--- Testing printProfitByPizzaReport ---");
         try {
             DBNinja.printProfitByPizzaReport(); // Call the method to print the report
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Test method for printProfitByOrderType
+    private static void testPrintProfitByOrderType() {
+        System.out.println("\n--- Testing printProfitByOrderType ---");
+        try {
+            DBNinja.printProfitByOrderType(); // Call the method to print the report
         } catch (SQLException | IOException e) {
             e.printStackTrace();
         }

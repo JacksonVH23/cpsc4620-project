@@ -48,8 +48,8 @@ ORDER BY
 CREATE OR REPLACE VIEW ProfitByOrderType AS
 (
     SELECT 
-        o.ordertable_OrderType AS `customerType`,
-        DATE_FORMAT(o.ordertable_OrderDateTime, '%c/%Y') AS `OrderMonth`,
+        CAST(o.ordertable_OrderType AS CHAR(30)) COLLATE utf8mb4_general_ci AS `customerType`,  -- Explicitly cast
+        CAST(DATE_FORMAT(o.ordertable_OrderDateTime, '%c/%Y') AS CHAR(15)) COLLATE utf8mb4_general_ci AS `OrderMonth`,  -- Explicitly cast
         SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
         SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
         SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `Profit`
@@ -59,10 +59,10 @@ CREATE OR REPLACE VIEW ProfitByOrderType AS
         `customerType`, `OrderMonth`
 
     UNION ALL
-    
+
     SELECT 
-        NULL AS `customerType`,
-        "Grand Total" AS `OrderMonth`,
+        CAST(NULL AS CHAR(30)) COLLATE utf8mb4_general_ci AS `customerType`,  -- Explicitly cast NULL
+        CAST("Grand Total" AS CHAR(15)) COLLATE utf8mb4_general_ci AS `OrderMonth`,  -- Explicitly cast
         SUM(o.ordertable_CustPrice) AS `TotalOrderPrice`,
         SUM(o.ordertable_BusPrice) AS `TotalOrderCost`,
         SUM(o.ordertable_CustPrice - o.ordertable_BusPrice) AS `Profit`
@@ -77,4 +77,5 @@ ORDER BY
             ELSE 4
         END,
         `Profit` DESC;
+
 -- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

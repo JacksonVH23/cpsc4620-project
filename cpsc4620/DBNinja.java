@@ -802,26 +802,46 @@ public final class DBNinja {
 			}
 		}
 	}
-	
-	public static void printProfitByOrderType() throws SQLException, IOException
-	{
-		/*
-		 * Prints the ProfitByOrderType view. Remember that this view
-		 * needs to exist in your DB, so be sure you've run your createViews.sql
-		 * files on your testing DB if you haven't already.
-		 * 
-		 * The result should be readable and sorted as indicated in the prompt.
-		 *
-		 * HINT: You need to match the expected output EXACTLY....I would suggest
-		 * you look at the printf method (rather that the simple print of println).
-		 * It operates the same in Java as it does in C and will make your code
-		 * better.
-		 * 
-		 */
+
+	public static void printProfitByOrderType() throws SQLException, IOException {
+		connect_to_db(); // Establish database connection
+
+		String query = "SELECT customerType, OrderMonth, TotalOrderPrice, TotalOrderCost, Profit FROM ProfitByOrderType";
+
+		try (Statement stmt = conn.createStatement();
+			 ResultSet rs = stmt.executeQuery(query)) {
+
+			// Print header
+			System.out.printf("%-15s %-12s %-20s %-20s %-10s%n", "Customer Type", "Order Month", "Total Order Price", "Total Order Cost", "Profit");
+			System.out.printf("%-15s %-12s %-20s %-20s %-10s%n", "-------------", "-----------", "-----------------", "-----------------", "------");
+
+			// Print each row
+			while (rs.next()) {
+				String customerType = rs.getString("customerType");
+				String orderMonth = rs.getString("OrderMonth");
+				double totalOrderPrice = rs.getDouble("TotalOrderPrice");
+				double totalOrderCost = rs.getDouble("TotalOrderCost");
+				double profit = rs.getDouble("Profit");
+
+				// Print row
+				System.out.printf("%-15s %-12s $%-19.2f $%-19.2f $%-9.2f%n",
+						customerType != null ? customerType : "", // Handle NULL customerType
+						orderMonth,
+						totalOrderPrice,
+						totalOrderCost,
+						profit);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new SQLException("Error retrieving the ProfitByOrderType report", e);
+		} finally {
+			if (conn != null && !conn.isClosed()) {
+				conn.close(); // Close the database connection
+			}
+		}
 	}
-	
-	
-	
+
+
 	/*
 	 * These private methods help get the individual components of an SQL datetime object. 
 	 * You're welcome to keep them or remove them....but they are usefull!
