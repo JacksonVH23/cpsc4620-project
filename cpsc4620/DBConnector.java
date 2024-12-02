@@ -14,14 +14,14 @@ import java.util.ArrayList;
 
 public class DBConnector {
 
-    // enter your user name here
-    protected static String user = "";
+    // enter your username here
+    protected static String user = "jvhadmin";
     // enter your password here
-    protected static String password = "";
+    protected static String password = "August2303!DB";
     // enter your database name here
-    private static String database_name = "";
+    private static String database_name = "jvhdb1";
     // Do not change the port. 3306 is the default MySQL port
-    private static String url = "";
+    private static String url = "jdbc:mysql://jvh-4910.czo7l7knugd2.us-east-1.rds.amazonaws.com:3306";
     private static Connection conn;
 
 
