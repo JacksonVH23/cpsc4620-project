@@ -363,14 +363,23 @@ public final class DBNinja {
 				double busPrice = rs.getDouble("ordertable_BusPrice");
 				boolean isComplete = rs.getBoolean("ordertable_isComplete");
 
-				Order order = switch (orderType) {
-                    case pickup -> getPickupOrder(orderID, custID, date, custPrice, busPrice, isComplete);
-                    case delivery -> getDeliveryOrder(orderID, custID, date, custPrice, busPrice, isComplete);
-                    case dine_in -> getDineinOrder(orderID, custID, date, custPrice, busPrice, isComplete);
-                    default -> null;
-                };
+				Order order;
+				switch (orderType) {
+					case "pickup":
+						order = getPickupOrder(orderID, custID, date, custPrice, busPrice, isComplete);
+						break;
+					case "delivery":
+						order = getDeliveryOrder(orderID, custID, date, custPrice, busPrice, isComplete);
+						break;
+					case "dinein":
+						order = getDineinOrder(orderID, custID, date, custPrice, busPrice, isComplete);
+						break;
+					default:
+						order = null;
+						break;
+				}
 
-                if (order != null) {
+				if (order != null) {
 					// Fetch and add pizzas and order discounts
 					ArrayList<Pizza> pizzas = getPizzas(order);
 					order.setPizzaList(pizzas);
@@ -417,10 +426,10 @@ public final class DBNinja {
 			stmtDelivery.setInt(1, orderID);
 			try (ResultSet rsDelivery = stmtDelivery.executeQuery()) {
 				if (rsDelivery.next()) {
-					String address = rsDelivery.getInt("delivery_HouseNum") + " " +
-							rsDelivery.getString("delivery_Street") + ", " +
-							rsDelivery.getString("delivery_City") + ", " +
-							rsDelivery.getString("delivery_State") + " " +
+					String address = rsDelivery.getInt("delivery_HouseNum") + "\t" +
+							rsDelivery.getString("delivery_Street") + "\t" +
+							rsDelivery.getString("delivery_City") + "\t" +
+							rsDelivery.getString("delivery_State") + "\t" +
 							rsDelivery.getInt("delivery_Zip");
 					boolean isDelivered = rsDelivery.getBoolean("delivery_isDelivered");
 					return new DeliveryOrder(orderID, custID, date, custPrice, busPrice, isComplete, address, isDelivered);
@@ -466,12 +475,30 @@ public final class DBNinja {
 				boolean isComplete = rsOrder.getBoolean("ordertable_isComplete");
 
 				// Get additional details based on order subtype
-                lastOrder = switch (orderType) {
-                    case "pickup" -> getPickupOrder(orderID, custID, date, custPrice, busPrice, isComplete);
-                    case "delivery" -> getDeliveryOrder(orderID, custID, date, custPrice, busPrice, isComplete);
-                    case "dinein" -> getDineinOrder(orderID, custID, date, custPrice, busPrice, isComplete);
-                    default -> lastOrder;
-                };
+				switch (orderType) {
+					case "pickup":
+						lastOrder = getPickupOrder(orderID, custID, date, custPrice, busPrice, isComplete);
+						break;
+					case "delivery":
+						lastOrder = getDeliveryOrder(orderID, custID, date, custPrice, busPrice, isComplete);
+						break;
+					case "dinein":
+						lastOrder = getDineinOrder(orderID, custID, date, custPrice, busPrice, isComplete);
+						break;
+					default:
+						lastOrder = null;
+						break;
+				}
+
+				if (lastOrder != null) {
+					// Fetch and attach pizzas to the order
+					ArrayList<Pizza> pizzas = getPizzas(lastOrder);
+					lastOrder.setPizzaList(pizzas);
+
+					// Fetch and attach discounts to the order
+					ArrayList<Discount> discounts = getDiscounts(lastOrder);
+					lastOrder.setDiscountList(discounts);
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -508,14 +535,23 @@ public final class DBNinja {
 					double busPrice = rs.getDouble("ordertable_BusPrice");
 					boolean isComplete = rs.getBoolean("ordertable_isComplete");
 
-					Order order = switch (orderType) {
-                        case pickup -> getPickupOrder(orderID, custID, orderDate, custPrice, busPrice, isComplete);
-                        case delivery -> getDeliveryOrder(orderID, custID, orderDate, custPrice, busPrice, isComplete);
-                        case dine_in -> getDineinOrder(orderID, custID, orderDate, custPrice, busPrice, isComplete);
-                        default -> null;
-                    };
+					Order order;
+					switch (orderType) {
+						case "pickup":
+							order = getPickupOrder(orderID, custID, orderDate, custPrice, busPrice, isComplete);
+							break;
+						case "delivery":
+							order = getDeliveryOrder(orderID, custID, orderDate, custPrice, busPrice, isComplete);
+							break;
+						case "dinein":
+							order = getDineinOrder(orderID, custID, orderDate, custPrice, busPrice, isComplete);
+							break;
+						default:
+							order = null;
+							break;
+					}
 
-                    if (order != null) {
+					if (order != null) {
 						// Populate pizzas and discounts for the order
 						ArrayList<Pizza> pizzas = getPizzas(order);
 						order.setPizzaList(pizzas);
@@ -1088,7 +1124,7 @@ public final class DBNinja {
 				String pizzaCrust = rs.getString("Crust");
 				double profit = rs.getDouble("Profit");
 				String lastOrderDate = rs.getString("OrderMonth");
-				System.out.printf("%-12s %-12s $%-9.2f %-15s%n", pizzaSize, pizzaCrust, profit, lastOrderDate);
+				System.out.printf("%-12s %-12s %-9.2f %-15s%n", pizzaSize, pizzaCrust, profit, lastOrderDate);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

@@ -19,9 +19,9 @@ INSERT INTO topping (
         topping_MinINVT,
         topping_CurINVT)
     VALUES
-        ('Pepperoni', 2.00, 2.75, 3.50, 4.50, 1.25, 0.20, 50, 100),
-        ('Sausage', 2.50, 3.00, 3.50, 4.25, 1.25, 0.15, 50, 100),
-        ('Ham', 2.00, 2.50, 3.25, 4.00, 1.50, 0.15, 25, 78),
+        ('Pepperoni', 2.00, 2.75, 3.50, 4.50, 1.25, 0.20, 50, 82),
+        ('Sausage', 2.50, 3.00, 3.50, 4.25, 1.25, 0.15, 50, 91),
+        ('Ham', 2.00, 2.50, 3.25, 4.00, 1.50, 0.15, 25, 69),
         ('Chicken', 1.50, 2.00, 2.25, 3.00, 1.75, 0.25, 25, 56),
         ('Green Pepper', 1.00, 1.50, 2.00, 2.50, 0.50, 0.02, 25, 79),
         ('Onion', 1.00, 1.50, 2.00, 2.75, 0.50, 0.02, 25, 85),
@@ -46,7 +46,7 @@ INSERT INTO discount (
         ('Employee', 15.00, 1),
         ('Lunch Special Medium', 1.00, 0),
         ('Lunch Special Large', 2.00, 0),
-        ('Specialty pizza', 1.50, 0),
+        ('Specialty Pizza', 1.50, 0),
         ('Happy Hour', 10.00, 1),
         ('Gameday Special', 20.00, 1);
 
