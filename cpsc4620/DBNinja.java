@@ -3,6 +3,8 @@ package cpsc4620;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * This file is where you will implement the methods needed to support this application.
@@ -231,8 +233,41 @@ public final class DBNinja {
 				toppingStmt.setInt(1, pizzaID);
 				toppingStmt.setInt(2, t.getTopID());
 				toppingStmt.setBoolean(3, t.getDoubled());
-
 				toppingStmt.executeUpdate();
+
+				// Update topping inventory
+				String updateInventoryQuery = "UPDATE topping " +
+						"SET topping_CurINVT = topping_CurINVT - ? " +
+						"WHERE topping_TopID = ?";
+				try (PreparedStatement updateStmt = conn.prepareStatement(updateInventoryQuery)) {
+					BigDecimal amountToDeduct;
+
+					switch (p.getSize()) {
+						case size_s:
+							amountToDeduct = BigDecimal.valueOf(t.getSmallAMT());
+							break;
+						case size_m:
+							amountToDeduct = BigDecimal.valueOf(t.getMedAMT());
+							break;
+						case size_l:
+							amountToDeduct = BigDecimal.valueOf(t.getLgAMT());
+							break;
+						case size_xl:
+							amountToDeduct = BigDecimal.valueOf(t.getXLAMT());
+							break;
+						default:
+							throw new IllegalArgumentException("Invalid pizza size: " + p.getSize());
+					}
+
+					if (t.getDoubled()) {
+						amountToDeduct = amountToDeduct.multiply(BigDecimal.valueOf(2));
+					}
+					amountToDeduct = amountToDeduct.setScale(2, RoundingMode.HALF_UP); // Final rounding
+
+					updateStmt.setDouble(1, amountToDeduct.doubleValue());
+					updateStmt.setInt(2, t.getTopID());
+					updateStmt.executeUpdate();
+				}
 			}
 		}
 
@@ -286,7 +321,7 @@ public final class DBNinja {
 
 		try {
 			if (newState == order_state.PREPARED) {
-				// Mark order as complete
+				// Mark the order as complete
 				String orderQuery = "UPDATE ordertable " +
 						"SET ordertable_isComplete = 1 " +
 						"WHERE ordertable_OrderID = ?";
@@ -295,7 +330,7 @@ public final class DBNinja {
 					orderStmt.executeUpdate();
 				}
 
-				// Mark all pizzas in order as completed
+				// Mark all pizzas in the order as prepared
 				String pizzaQuery = "UPDATE pizza SET " +
 						"pizza_PizzaState = 'Prepared' " +
 						"WHERE ordertable_OrderID = ?";
@@ -303,25 +338,23 @@ public final class DBNinja {
 					pizzaStmt.setInt(1, OrderID);
 					pizzaStmt.executeUpdate();
 				}
-
-			} else if (newState == order_state.DELIVERED) {
-				// Mark delivery status as delivered
-				String deliveryQuery = "UPDATE delivery " +
-						"SET delivery_isDelivered = 1 " +
-						"WHERE ordertable_OrderID = ?";
-				try (PreparedStatement deliveryStmt = conn.prepareStatement(deliveryQuery)) {
-					deliveryStmt.setInt(1, OrderID);
-					deliveryStmt.executeUpdate();
-				}
-
 			} else if (newState == order_state.PICKEDUP) {
-				// Mark pickup status as picked up
+				// Mark the pickup order as picked up
 				String pickupQuery = "UPDATE pickup " +
 						"SET pickup_IsPickedUp = 1 " +
 						"WHERE ordertable_OrderID = ?";
 				try (PreparedStatement pickupStmt = conn.prepareStatement(pickupQuery)) {
 					pickupStmt.setInt(1, OrderID);
 					pickupStmt.executeUpdate();
+				}
+			} else if (newState == order_state.DELIVERED) {
+				// Mark the delivery order as delivered
+				String deliveryQuery = "UPDATE delivery " +
+						"SET delivery_isDelivered = 1 " +
+						"WHERE ordertable_OrderID = ?";
+				try (PreparedStatement deliveryStmt = conn.prepareStatement(deliveryQuery)) {
+					deliveryStmt.setInt(1, OrderID);
+					deliveryStmt.executeUpdate();
 				}
 			} else {
 				throw new IllegalArgumentException("Invalid order state provided.");
@@ -1145,11 +1178,13 @@ public final class DBNinja {
 		try (Statement stmt = conn.createStatement();
 			 ResultSet rs = stmt.executeQuery(query)) {
 
-			// Print header
-			System.out.printf("%-15s %-12s %-20s %-20s %-10s%n", "Customer Type", "Order Month", "Total Order Price", "Total Order Cost", "Profit");
-			System.out.printf("%-15s %-12s %-20s %-20s %-10s%n", "-------------", "-----------", "-----------------", "-----------------", "------");
+			// Print header with proper formatting
+			System.out.printf("%-19s %-19s %-19s %-19s %-10s%n",
+					"Customer Type", "Order Month", "Total Order Price", "Total Order Cost", "Profit");
+			System.out.printf("%-19s %-19s %-19s %-19s %-10s%n",
+					"-------------", "-----------", "-----------------", "-----------------", "------");
 
-			// Print each row
+			// Print each row with properly formatted columns
 			while (rs.next()) {
 				String customerType = rs.getString("customerType");
 				String orderMonth = rs.getString("OrderMonth");
@@ -1157,14 +1192,15 @@ public final class DBNinja {
 				double totalOrderCost = rs.getDouble("TotalOrderCost");
 				double profit = rs.getDouble("Profit");
 
-				// Print row
-				System.out.printf("%-15s %-12s $%-19.2f $%-19.2f $%-9.2f%n",
+				// Format and print each row
+				System.out.printf("%-19s %-19s %-19.2f %-19.2f %-10.2f%n",
 						customerType != null ? customerType : "", // Handle NULL customerType
 						orderMonth,
 						totalOrderPrice,
 						totalOrderCost,
 						profit);
 			}
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new SQLException("Error retrieving the ProfitByOrderType report", e);
