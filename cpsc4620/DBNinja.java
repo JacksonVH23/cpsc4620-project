@@ -3,8 +3,6 @@ package cpsc4620;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /*
  * This file is where you will implement the methods needed to support this application.
@@ -240,31 +238,33 @@ public final class DBNinja {
 						"SET topping_CurINVT = topping_CurINVT - ? " +
 						"WHERE topping_TopID = ?";
 				try (PreparedStatement updateStmt = conn.prepareStatement(updateInventoryQuery)) {
-					BigDecimal amountToDeduct;
+					Double num_toppings = 0.0;
 
 					switch (p.getSize()) {
 						case size_s:
-							amountToDeduct = BigDecimal.valueOf(t.getSmallAMT());
+							num_toppings = t.getSmallAMT();
 							break;
 						case size_m:
-							amountToDeduct = BigDecimal.valueOf(t.getMedAMT());
+							num_toppings = t.getMedAMT();
 							break;
 						case size_l:
-							amountToDeduct = BigDecimal.valueOf(t.getLgAMT());
+							num_toppings = t.getLgAMT();
 							break;
 						case size_xl:
-							amountToDeduct = BigDecimal.valueOf(t.getXLAMT());
+							num_toppings = t.getXLAMT();
 							break;
 						default:
 							throw new IllegalArgumentException("Invalid pizza size: " + p.getSize());
 					}
 
 					if (t.getDoubled()) {
-						amountToDeduct = amountToDeduct.multiply(BigDecimal.valueOf(2));
+						num_toppings = num_toppings * 2;
 					}
-					amountToDeduct = amountToDeduct.setScale(2, RoundingMode.HALF_UP); // Final rounding
 
-					updateStmt.setDouble(1, amountToDeduct.doubleValue());
+					// Round up
+					num_toppings = Math.ceil(num_toppings);
+
+					updateStmt.setDouble(1, num_toppings);
 					updateStmt.setInt(2, t.getTopID());
 					updateStmt.executeUpdate();
 				}
